@@ -15,6 +15,8 @@ def give_dataloaders(dataset, opt):
         datasets = give_cars196_datasets(opt)
     elif opt.dataset=='sop':
         datasets = give_sop_datasets(opt)
+    elif opt.dataset=='cub':
+        datasets = give_cub_datasets(opt)
     else:
         raise Exception('No Dataset >{}< available!'.format(dataset))
     dataloaders = {}
@@ -91,6 +93,39 @@ def give_sop_datasets(opt):
 	val_dataset = BaseTripletDataset(test_image_dict,   opt, is_validation=True)
 	eval_dataset = BaseTripletDataset(train_image_dict,   opt, is_validation=True)
 	return {'training':train_dataset, 'testing':val_dataset, 'evaluation':eval_dataset}
+
+def give_cub_datasets(opt):
+        train_image_dict, test_image_dict = {}, {}
+        all_image_dict = {}
+        images_data = open(os.path.join(opt.source_path, 'images.txt'), 'r').read().splitlines()
+        split_data = open(os.path.join(opt.source_path, 'train_test_split.txt'), 'r').read().splitlines()
+        data_dict = {}
+        for given_sample in images_data:
+                key = given_sample.split(' ')[0]
+                path = given_sample.split(' ')[1]
+                data_dict[key] = [path]
+        for given_sample in split_data:
+                key = given_sample.split(' ')[0]
+                split = int(given_sample.split(' ')[1])
+                data_dict[key].append(split)
+        for entry in data_dict.keys():
+                given_sample = data_dict[entry]
+                class_id = int(given_sample[0].split('.')[0])
+                im_path = os.path.join(opt.source_path, 'images', given_sample[0])
+                split = given_sample[1]
+                if class_id not in all_image_dict.keys():
+                        all_image_dict[class_id] = []
+                all_image_dict[class_id].append(im_path)
+        train_classes = list(all_image_dict.keys())[:100]
+        val_classes = list(all_image_dict.keys())[100:]
+        for given_class in train_classes:
+                train_image_dict[given_class] = all_image_dict[given_class]
+        for given_class in val_classes:
+                test_image_dict[given_class] = all_image_dict[given_class]
+        train_dataset = TrainDatasetsmoothap(train_image_dict, opt)
+        val_dataset = BaseTripletDataset(test_image_dict, opt, is_validation=True)
+        eval_dataset = BaseTripletDataset(train_image_dict, opt, is_validation=True)
+        return {'training':train_dataset, 'testing':val_dataset, 'evaluation':eval_dataset}
 
 def give_inaturalist_datasets(opt):
     train_image_dict, val_image_dict  = {},{}
