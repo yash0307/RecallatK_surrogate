@@ -131,6 +131,26 @@ if opt.dataset == 'cars196':
         opt.lr = 0.00001
         opt.opt = 'adamW'
 
+if opt.dataset == 'cub':
+    opt.k_vals = [1,2,4,8,16]
+    opt.bs = 400
+    opt.bs_base = 100
+    if opt.arch == 'resnet50':
+        opt.n_epochs = 40
+        opt.tau = [10,20,30]
+        opt.lr = 0.0001
+        opt.opt = 'adam'
+    if opt.arch == 'ViTB32':
+        opt.n_epochs = 40
+        opt.tau = [10,20,30]
+        opt.lr = 0.00003
+        opt.opt = 'adamW'
+    if opt.arch == 'ViTB16':
+        opt.n_epochs = 40
+        opt.tau = [10,20,30]
+        opt.lr = 0.00001
+        opt.opt = 'adamW'
+
 timestamp = datetime.datetime.now().strftime(r"%Y-%m-%d_%H-%M-%S")
 exp_name = aux.args2exp_name(opt)
 opt.save_name = f"weights_{exp_name}" +'/'+ timestamp
