@@ -1,16 +1,11 @@
 import warnings
 warnings.filterwarnings("ignore")
 import torch, faiss
-import pdb
-import cvxpy as cp
 import numpy as np
-import copy
-import sys
-import random
 
 def loss_select(loss, opt, to_optim):
     if loss == 'recallatk':
-        loss_params  = {'anneal':opt.sigmoid_temperature, 'batch_size':opt.bs, "num_id":int(opt.bs / opt.samples_per_class), 'feat_dims':opt.embed_dim, 'k_vals': opt.k_vals_train, 'k_temperatures': opt.k_temperatures}
+        loss_params  = {'anneal':opt.sigmoid_temperature, 'batch_size':opt.bs, "num_id":int(opt.bs / opt.samples_per_class), 'feat_dims':opt.embed_dim, 'k_vals': opt.k_vals_train, 'k_temperatures': opt.k_temperatures, 'mixup':opt.mixup}
         criterion = RecallatK(**loss_params)
     else:
         raise Exception('Loss {} not available!'.format(loss))
@@ -24,7 +19,7 @@ def sigmoid(tensor, temp=1.0):
     return y
 
 class RecallatK(torch.nn.Module):
-    def __init__(self, anneal, batch_size, num_id, feat_dims, k_vals, k_temperatures):
+    def __init__(self, anneal, batch_size, num_id, feat_dims, k_vals, k_temperatures, mixup):
         super(RecallatK, self).__init__()
         assert(batch_size%num_id==0)
         self.anneal = anneal
@@ -33,6 +28,7 @@ class RecallatK(torch.nn.Module):
         self.feat_dims = feat_dims
         self.k_vals = [min(batch_size, k) for k in k_vals]
         self.k_temperatures = k_temperatures
+        self.mixup = mixup
         self.samples_per_class = int(batch_size/num_id)
 
     def forward(self, preds, q_id):
