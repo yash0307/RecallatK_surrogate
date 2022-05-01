@@ -15,10 +15,11 @@ import copy
 import pdb
 from tensorboardX import SummaryWriter
 import torch.multiprocessing
+from mixup import *
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset',      default='Inaturalist',   type=str, help='Dataset to use.', choices=['Inaturalist','vehicle_id', 'sop', 'cars196'])
+parser.add_argument('--dataset',      default='Inaturalist',   type=str, help='Dataset to use.', choices=['Inaturalist','vehicle_id', 'sop', 'cars196', 'inshop', 'cub'])
 parser.add_argument('--lr',                default=0.00001,  type=float, help='Learning Rate for network parameters.')
 parser.add_argument('--fc_lr_mul',         default=5,        type=float, help='OPTIONAL: Multiply the embedding layer learning rate by this value. If set to 0, the embedding layer shares the same learning rate.')
 parser.add_argument('--n_epochs',          default=400,       type=int,   help='Number of training epochs.')
@@ -30,35 +31,30 @@ parser.add_argument('--seed',              default=1,        type=int,   help='R
 parser.add_argument('--scheduler',         default='step',   type=str,   help='Type of learning rate scheduling. Currently: step & exp.')
 parser.add_argument('--gamma',             default=0.3,      type=float, help='Learning rate reduction after tau epochs.')
 parser.add_argument('--decay',             default=0.0004,   type=float, help='Weight decay for optimizer.')
-parser.add_argument('--tau',               default= [200,300],nargs='+',type=int,help='Stepsize(s) before reducing learning rate.')
+parser.add_argument('--tau',               default= [200,300,300,120,220,250,280],nargs='+',type=int,help='Stepsize(s) before reducing learning rate.')
 parser.add_argument('--infrequent_eval', default=1,type=int, help='only compute evaluation metrics every 10 epochs')
-parser.add_argument('--opt', default = 'adam',help='adam or adamW')
+parser.add_argument('--opt', default = 'adam',help='adam or sgd')
 parser.add_argument('--loss',         default='recallatk', type=str)
-parser.add_argument('--sigmoid_temperature', default=0.01, type=float, help='tau_{2}, the temperature applied on the difference of similarity values')
-parser.add_argument('--k_vals',       nargs='+', default=[1,2,4,8], type=int, help='set of k values to be used for Recall@k surrogate.')
+parser.add_argument('--mixup', default=0, type=int, help='Gompertzap: use mixup')
+parser.add_argument('--sigmoid_temperature', default=0.01, type=float, help='RS@k: the temperature of the sigmoid used to estimate ranks')
+parser.add_argument('--k_vals',       nargs='+', default=[1,2,4,8], type=int, help='Recall @ Values.')
 parser.add_argument('--k_vals_train',       nargs='+', default=[1,2,4,8,16], type=int, help='Training recall@k vals.')
-parser.add_argument('--k_temperatures',       nargs='+', default=[1,2,4,8,16], type=int, help='tau_{1}, the temperatures applied on the ranks.')
+parser.add_argument('--k_temperatures',       nargs='+', default=[1,2,4,8,16], type=int, help='Temperature for training recall@k vals.')
 parser.add_argument('--resume', default='', type=str, help='path to checkpoint to load weights from (if empty then ImageNet pre-trained weights are loaded')
 parser.add_argument('--embed_dim',    default=512,         type=int,   help='Embedding dimensionality of the network')
-parser.add_argument('--arch',         default='resnet50',  type=str,   help='Network backend choice: resnet50, googlenet, BNinception, ViT')
+parser.add_argument('--arch',         default='resnet50',  type=str,   help='Network backend choice: resnet50, googlenet, BNinception')
 parser.add_argument('--grad_measure',                      action='store_true', help='If added, gradients passed from embedding layer to the last conv-layer are stored in each iteration.')
 parser.add_argument('--dist_measure',                      action='store_true', help='If added, the ratio between intra- and interclass distances is stored after each epoch.')
 parser.add_argument('--not_pretrained',                    action='store_true', help='If added, the network will be trained WITHOUT ImageNet-pretrained weights.')
 parser.add_argument('--gpu',          default=0,           type=int,   help='GPU-id for GPU to use.')
 parser.add_argument('--savename',     default='',          type=str,   help='Save folder name if any special information is to be included.')
-parser.add_argument('--source_path',  default='',         type=str, help='Path to data')
+parser.add_argument('--source_path',  default='/home/patelyas/Smooth_AP',         type=str, help='Path to data')
 parser.add_argument('--save_path',    default=os.getcwd()+'/Training_Results', type=str, help='Where to save the checkpoints')
 
 opt = parser.parse_args()
 opt.source_path += '/'+opt.dataset
 opt.save_path   += '/'+opt.dataset
 
-# Training hyper-parameters
-opt.k_vals_train = [1, 2, 4, 8, 16]
-opt.k_temperatures = [1.0, 1.0, 1.0, 1.0, 1.0]
-opt.gamma = 0.3
-opt.samples_per_class = 4
-opt.fc_lr_mul = 1.
 
 if opt.dataset== 'Inaturalist':
     opt.k_vals = [1,4,16,32]
@@ -157,20 +153,12 @@ model      = netlib.networkselect(opt)
 _          = model.to(opt.device)
 
 if 'fc_lr_mul' in vars(opt).keys() and opt.fc_lr_mul!=0:
-    if opt.arch == 'resnet50':
-        all_but_fc_params = list(filter(lambda x: 'last_linear' not in x[0],model.named_parameters()))
-        for ind, param in enumerate(all_but_fc_params):
-            all_but_fc_params[ind] = param[1]
-        fc_params         = model.model.last_linear.parameters()
-        to_optim          = [{'params':all_but_fc_params,'lr':opt.lr,'weight_decay':opt.decay},
-                            {'params':fc_params,'lr':opt.lr*opt.fc_lr_mul,'weight_decay':opt.decay}]
-    elif opt.arch == 'ViTB16' or opt.arch == 'ViTB32' or opt.arch == 'DeiTB':
-        all_but_fc_params = list(filter(lambda x: 'head' not in x[0],model.named_parameters()))
-        for ind, param in enumerate(all_but_fc_params):
-            all_but_fc_params[ind] = param[1]
-        fc_params         = model.model.head.parameters()
-        to_optim          = [{'params':all_but_fc_params,'lr':opt.lr,'weight_decay':opt.decay},
-                            {'params':fc_params,'lr':opt.lr*opt.fc_lr_mul,'weight_decay':opt.decay}]
+    all_but_fc_params = list(filter(lambda x: 'last_linear' not in x[0],model.named_parameters()))
+    for ind, param in enumerate(all_but_fc_params):
+        all_but_fc_params[ind] = param[1]
+    fc_params         = model.model.last_linear.parameters()
+    to_optim          = [{'params':all_but_fc_params,'lr':opt.lr,'weight_decay':opt.decay},
+                         {'params':fc_params,'lr':opt.lr*opt.fc_lr_mul,'weight_decay':opt.decay}]
 else:
     to_optim   = [{'params':model.parameters(),'lr':opt.lr,'weight_decay':opt.decay}]
 dataloaders      = data.give_dataloaders(opt.dataset, opt)
@@ -186,10 +174,12 @@ if opt.grad_measure:
 if opt.dist_measure:
     distance_measure = eval.DistanceMeasure(dataloaders['evaluation'], opt, name='Train', update_epochs=1)
 
-if opt.opt == 'adamW':
-    optimizer    = torch.optim.AdamW(to_optim)
-elif opt.opt == 'adam':
+if opt.opt == 'adam':
     optimizer    = torch.optim.Adam(to_optim)
+elif opt.opt == 'sgd':
+    optimizer    = torch.optim.SGD(to_optim)
+elif opt.opt == 'rmsprop':
+    optimizer = torch.optim.RMSprop(to_optim)
 else:
     raise Exception('unknown optimiser')
 if opt.scheduler=='exp':
@@ -220,17 +210,24 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
             output[j:j+opt.bs_base,:] = copy.copy(x)
             del x
             torch.cuda.empty_cache()
-        num_samples = output.shape[0]
+        if criterion.mixup:
+            output_mixup = pos_mixup(output, criterion.num_id)
+            num_samples = output_mixup.shape[0]
+        else:
+            num_samples = output.shape[0]
+
         output.retain_grad()
         loss = 0.
 
         for q in range(0, num_samples):
-            loss += criterion(output, q)
+            if criterion.mixup: loss += criterion(output_mixup, q)
+            else: loss += criterion(output, q)
         loss_collect.append(loss.item())
         loss.backward()
         output_grad = copy.copy(output.grad)
         del loss
         del output
+        if criterion.mixup: del output_mixup
         torch.cuda.empty_cache()
 
         for j in range(0, len(input), opt.bs_base):
@@ -240,10 +237,7 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
         optimizer.step()
         optimizer.zero_grad()
         if opt.grad_measure:
-            if opt.arch == 'resnet50':
-                grad_measure.include(model.model.last_linear)
-            else:
-                grad_measure.include(model.model.head)
+            grad_measure.include(model.model.last_linear)
         if i==len(train_dataloader)-1:
             data_iterator.set_description('Epoch (Train) {0}: Mean Loss [{1:.4f}]'.format(epoch, np.mean(loss_collect)))
     LOG.log('train', LOG.metrics_to_log['train'], [epoch, np.round(time.time()-start,4), np.mean(loss_collect)])
@@ -252,12 +246,14 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, opt, epoch):
         grad_measure.dump(epoch)
 
 print('\n-----\n')
-if opt.dataset in ['Inaturalist', 'sop', 'cars196']:
+if opt.dataset in ['Inaturalist', 'sop', 'cars196', 'cub']:
     eval_params = {'dataloader': dataloaders['testing'], 'model': model, 'opt': opt, 'epoch': 0}
 elif opt.dataset == 'vehicle_id':
     eval_params = {
         'dataloaders': [dataloaders['testing_set1'], dataloaders['testing_set2'], dataloaders['testing_set3']],
         'model': model, 'opt': opt, 'epoch': 0}
+elif opt.dataset == 'inshop':
+    eval_params = {'query_dataloader': dataloaders['testing_q'], 'gallery_dataloader': dataloaders['testing_g'], 'model': model, 'opt': opt, 'epoch': 0}
 print('epochs -> '+str(opt.n_epochs))
 
 for epoch in range(opt.n_epochs):
@@ -266,10 +262,12 @@ for epoch in range(opt.n_epochs):
     train_one_epoch(dataloaders['training'], model, optimizer, criterion, opt, epoch)
     dataloaders['training'].dataset.reshuffle()
     _ = model.eval()
-    if opt.dataset in ['Inaturalist', 'sop', 'cars196']:
+    if opt.dataset in ['Inaturalist', 'sop', 'cars196', 'cub']:
         eval_params = {'dataloader':dataloaders['testing'], 'model':model, 'opt':opt, 'epoch':epoch}
     elif opt.dataset=='vehicle_id':
         eval_params = {'dataloaders':[dataloaders['testing_set1'], dataloaders['testing_set2'], dataloaders['testing_set3']], 'model':model, 'opt':opt, 'epoch':epoch}
+    elif opt.dataset == 'inshop':
+        eval_params = {'query_dataloader': dataloaders['testing_q'], 'gallery_dataloader': dataloaders['testing_g'], 'model': model, 'opt': opt, 'epoch': epoch}
     if opt.infrequent_eval == 1:
         epoch_freq = 5
     else:
