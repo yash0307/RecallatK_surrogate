@@ -18,7 +18,7 @@ from mixup import *
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset',      default='Inaturalist',   type=str, help='Dataset to use.', choices=['Inaturalist','vehicle_id', 'sop', 'cars196', 'inshop', 'cub'])
+parser.add_argument('--dataset',      default='Inaturalist',   type=str, help='Dataset to use.', choices=['Inaturalist','vehicle_id', 'sop', 'cars196', 'cub'])
 parser.add_argument('--lr',                default=0.00001,  type=float, help='Learning Rate for network parameters.')
 parser.add_argument('--fc_lr_mul',         default=5,        type=float, help='OPTIONAL: Multiply the embedding layer learning rate by this value. If set to 0, the embedding layer shares the same learning rate.')
 parser.add_argument('--n_epochs',          default=400,       type=int,   help='Number of training epochs.')
@@ -251,8 +251,6 @@ elif opt.dataset == 'vehicle_id':
     eval_params = {
         'dataloaders': [dataloaders['testing_set1'], dataloaders['testing_set2'], dataloaders['testing_set3']],
         'model': model, 'opt': opt, 'epoch': 0}
-elif opt.dataset == 'inshop':
-    eval_params = {'query_dataloader': dataloaders['testing_q'], 'gallery_dataloader': dataloaders['testing_g'], 'model': model, 'opt': opt, 'epoch': 0}
 print('epochs -> '+str(opt.n_epochs))
 
 for epoch in range(opt.n_epochs):
@@ -265,8 +263,6 @@ for epoch in range(opt.n_epochs):
         eval_params = {'dataloader':dataloaders['testing'], 'model':model, 'opt':opt, 'epoch':epoch}
     elif opt.dataset=='vehicle_id':
         eval_params = {'dataloaders':[dataloaders['testing_set1'], dataloaders['testing_set2'], dataloaders['testing_set3']], 'model':model, 'opt':opt, 'epoch':epoch}
-    elif opt.dataset == 'inshop':
-        eval_params = {'query_dataloader': dataloaders['testing_q'], 'gallery_dataloader': dataloaders['testing_g'], 'model': model, 'opt': opt, 'epoch': epoch}
     if opt.infrequent_eval == 1:
         epoch_freq = 5
     else:
