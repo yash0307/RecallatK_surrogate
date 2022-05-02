@@ -3,7 +3,6 @@ import torch.nn as nn
 import pretrainedmodels as ptm
 import torch.nn.functional as F
 import timm
-import pdb
 
 def initialize_weights(model):
     for idx,module in enumerate(model.modules()):

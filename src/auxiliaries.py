@@ -259,7 +259,6 @@ def set_logging(opt):
         f.write(gimme_save_string(opt))
     pkl.dump(opt,open(opt.save_path+"/hypa.pkl","wb"))
 
-import pdb
 class LOGGER():
     def __init__(self, opt, metrics_to_log, name='Basic', start_new=True):
         self.prop           = opt
