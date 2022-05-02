@@ -18,6 +18,13 @@ If you make use of the code in this repository for scientific purposes, we appre
 }
 ```
 
+## Dependencies
+A list of all dependencies that were used in our setup are listed in `requirements.txt `. Note that not all of them are necessary, some key dependencies are as follows:
+- Python 3.7.4
+- PyTorch 1.8.0
+- Torchvision 0.9.1
+- Faiss 1.6.4
+
 ## Setting up datasets
 Recall@k Surrogate demonstrates the performance on five publicly available datasets, namely, iNaturalist, Stanford Online Products, PUK Vehicle ID, Stanford Cars, and Caltech CUB. Download each of these datasets from their respective sources.
 
