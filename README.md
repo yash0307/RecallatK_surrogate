@@ -35,7 +35,7 @@ Recall@k Surrogate demonstrates the performance on five publicly available datas
 - **Caltech CUB (cub)**: This dataset is available at DeepAI on the following [link](https://deepai.org/dataset/cub-200-2011).
 
 ### File structure
-Place the dataset folders directly in the RecallatK_surrogate folder.
+Place the dataset folders directly in the RecallatK_surrogate folder. [An example](https://github.com/yash0307/RecallatK_surrogate/blob/main/file_structure.txt) of the file structure with datasets.
 
 ## Training
 Some hyper-paramters are hard-coded in `src/main.py`. For training with `<dataset>`, use following command:
