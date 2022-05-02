@@ -48,4 +48,5 @@ For training with SiMix, use the following command:
 `python src/main.py --loss recallatk --dataset <dataset> --mixup 0 --samples_per_class 4 --embed_dim 512`
 
 Keep the following in mind:
-
+- Batch size (`--bs`) is by default set to `max(4000, #classes*samples_per_class)`. This works on a 32 GB Nvidia V100 GPU, consider lowering the batch size if you run into GPU out-of-memory error.
+- Base batch size (`--bs_base`) is by default set to `200`. This works on a 32 GB Nvidia V100 GPU, consider lowering the base batch size if you run into GPU out-of-memory error.
