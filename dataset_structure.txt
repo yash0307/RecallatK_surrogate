@@ -30,6 +30,8 @@
 │   ├── train_val2019.tar.gz
 │   ├── val2018.json
 │   └── val2018.json.tar.gz
+├── README.md
+├── requirements.txt
 ├── sop
 │   ├── bicycle_final
 │   ├── bicycle_final.txt
@@ -61,6 +63,16 @@
 │   ├── table_final.txt
 │   ├── toaster_final
 │   └── toaster_final.txt
+├── src
+│   ├── auxiliaries_nofaiss.py
+│   ├── auxiliaries.py
+│   ├── datasets.py
+│   ├── evaluate_model.py
+│   ├── evaluate.py
+│   ├── losses.py
+│   ├── main.py
+│   ├── mixup.py
+│   └── netlib.py
 └── vehicle_id
     ├── attribute
     ├── image
