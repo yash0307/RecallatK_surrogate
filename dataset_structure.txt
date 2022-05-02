@@ -1,0 +1,69 @@
+.
+├── cars196
+│   ├── car_ims
+│   ├── cars_annos.mat
+├── cub
+│   ├── attributes
+│   ├── attributes.txt
+│   ├── bounding_boxes.txt
+│   ├── classes.txt
+│   ├── image_class_labels.txt
+│   ├── images
+│   ├── images.txt
+│   ├── parts
+│   ├── README
+├── Inaturalist
+│   ├── categories.json
+│   ├── categories.json.tar.gz
+│   ├── inat2018_locations
+│   ├── inat2018_locations.zip
+│   ├── Inat_dataset_splits
+│   ├── Inat_dataset_splits.zip
+│   ├── test2018
+│   ├── test2018.json
+│   ├── test2018.json.tar.gz
+│   ├── test2018.tar.gz
+│   ├── train2018.json
+│   ├── train2018.json.tar.gz
+│   ├── train_val2018
+│   ├── train_val2018.tar.gz
+│   ├── train_val2019.tar.gz
+│   ├── val2018.json
+│   └── val2018.json.tar.gz
+├── sop
+│   ├── bicycle_final
+│   ├── bicycle_final.txt
+│   ├── cabinet_final
+│   ├── cabinet_final.txt
+│   ├── chair_final
+│   ├── chair_final.txt
+│   ├── coffee_maker_final
+│   ├── coffee_maker_final.txt
+│   ├── Ebay_final.txt
+│   ├── Ebay_info.txt
+│   ├── Ebay_test.txt
+│   ├── Ebay_train.txt
+│   ├── fan_final
+│   ├── fan_final.txt
+│   ├── kettle_final
+│   ├── kettle_final.txt
+│   ├── lamp_final
+│   ├── lamp_final.txt
+│   ├── LICENSE
+│   ├── mug_final
+│   ├── mug_final.txt
+│   ├── README
+│   ├── sofa_final
+│   ├── sofa_final.txt
+│   ├── stapler_final
+│   ├── stapler_final.txt
+│   ├── table_final
+│   ├── table_final.txt
+│   ├── toaster_final
+│   └── toaster_final.txt
+└── vehicle_id
+    ├── attribute
+    ├── image
+    ├── README.md
+    ├── train_test_split
+    └── VehicleID_V1.0.zip
