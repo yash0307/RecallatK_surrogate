@@ -33,9 +33,11 @@ Place the dataset folders directly in the RecallatK_surrogate folder.
 
 ## Training
 Some hyper-paramters are hard-coded in `src/main.py`. For training with <dataset>, use following command:
+
 `python src/main.py --loss recallatk --dataset <dataset> --mixup 0 --samples_per_class 4 --embed_dim 512`
 
 For training with SiMix, use the following command:
+
 `python src/main.py --loss recallatk --dataset <dataset> --mixup 0 --samples_per_class 4 --embed_dim 512`
 
 Keep the following in mind:
