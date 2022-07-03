@@ -11,7 +11,7 @@ IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022.
 If you make use of the code in this repository for scientific purposes, we appreciate it if you cite our paper:
 ```latex
 @inproceedings{patel2022recall,
-  title={Recall@ k surrogate loss with large batches and similarity mixup},
+  title={Recall@k surrogate loss with large batches and similarity mixup},
   author={Patel, Yash and Tolias, Giorgos and Matas, Ji{\v{r}}{\'\i}},
   booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
   pages={7502--7511},
