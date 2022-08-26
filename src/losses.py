@@ -1,6 +1,6 @@
 import warnings
 warnings.filterwarnings("ignore")
-import torch, faiss
+import torch
 import numpy as np
 
 def loss_select(loss, opt, to_optim):
