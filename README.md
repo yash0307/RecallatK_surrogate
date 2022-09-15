@@ -41,11 +41,11 @@ Place the dataset folders directly in the RecallatK_surrogate folder. [An exampl
 ## Training
 Some hyper-paramters are hard-coded in `src/main.py`. For training with `<dataset>`, use following command:
 
-`python src/main.py --source_path <path_to_RecallatK_surrogate> --loss recallatk --dataset <dataset> --mixup 0 --samples_per_class 4 --embed_dim 512`
+`python src/main.py --source_path <path_to_RecallatK_surrogate> --loss recallatk --dataset <dataset> --mixup 0 --samples_per_class 4 --embed_dim 512 --fc_lr_mul 0`
 
 For training with SiMix, use the following command:
 
-`python src/main.py --source_path <path_to_RecallatK_surrogate> --loss recallatk --dataset <dataset> --mixup 1 --samples_per_class 4 --embed_dim 512`
+`python src/main.py --source_path <path_to_RecallatK_surrogate> --loss recallatk --dataset <dataset> --mixup 1 --samples_per_class 4 --embed_dim 512 --fc_lr_mul 0`
 
 Keep the following in mind:
 - Batch size (`--bs`) is by default set to `max(4000, #classes*samples_per_class)`. This works on a 32 GB Nvidia V100 GPU; consider lowering the batch size if you run into GPU out-of-memory error.
