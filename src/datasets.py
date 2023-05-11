@@ -122,7 +122,7 @@ def give_cub_datasets(opt):
                 train_image_dict[given_class] = all_image_dict[given_class]
         for given_class in val_classes:
                 test_image_dict[given_class] = all_image_dict[given_class]
-        train_dataset = TrainDatasetsmoothap(train_image_dict, opt)
+        train_dataset = TrainDatasetrsk(train_image_dict, opt)
         val_dataset = BaseTripletDataset(test_image_dict, opt, is_validation=True)
         eval_dataset = BaseTripletDataset(train_image_dict, opt, is_validation=True)
         return {'training':train_dataset, 'testing':val_dataset, 'evaluation':eval_dataset}
