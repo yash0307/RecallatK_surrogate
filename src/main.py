@@ -194,9 +194,11 @@ if opt.dist_measure:
     distance_measure = eval.DistanceMeasure(dataloaders['evaluation'], opt, name='Train', update_epochs=1)
 
 if opt.opt == 'adam':
-    optimizer    = torch.optim.Adam(to_optim)
+    optimizer = torch.optim.Adam(to_optim)
+elif opt.opt == 'adamW':
+    optimizer = torch.optim.AdamW(to_optim)
 elif opt.opt == 'sgd':
-    optimizer    = torch.optim.SGD(to_optim)
+    optimizer = torch.optim.SGD(to_optim)
 elif opt.opt == 'rmsprop':
     optimizer = torch.optim.RMSprop(to_optim)
 else:
