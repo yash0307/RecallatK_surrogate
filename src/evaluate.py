@@ -11,7 +11,7 @@ import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 def evaluate(dataset, LOG, **kwargs):
-    if dataset in ['Inaturalist', 'sop', 'cars196']:
+    if dataset in ['Inaturalist', 'sop', 'cars196', 'cub']:
         ret = evaluate_one_dataset(LOG, **kwargs)
     elif dataset in ['vehicle_id']:
         ret = evaluate_multiple_datasets(LOG, **kwargs)
