@@ -32,7 +32,7 @@ parser.add_argument('--gamma',             default=0.3,      type=float, help='L
 parser.add_argument('--decay',             default=0.0004,   type=float, help='Weight decay for optimizer.')
 parser.add_argument('--tau',               default= [10,20,30],nargs='+',type=int,help='Stepsize(s) before reducing learning rate.')
 parser.add_argument('--infrequent_eval', default=1,type=int, help='only compute evaluation metrics every 10 epochs')
-parser.add_argument('--opt', default = 'adam',help='adam or sgd')
+parser.add_argument('--opt', default = 'adam',help='adam, adamw, sgd')
 parser.add_argument('--loss',         default='recallatk', type=str)
 parser.add_argument('--mixup', default=0, type=int, help='Gompertzap: use mixup')
 parser.add_argument('--sigmoid_temperature', default=0.01, type=float, help='RS@k: the temperature of the sigmoid used to estimate ranks')
