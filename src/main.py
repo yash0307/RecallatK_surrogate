@@ -38,7 +38,7 @@ parser.add_argument('--mixup', default=0, type=int, help='Gompertzap: use mixup'
 parser.add_argument('--sigmoid_temperature', default=0.01, type=float, help='RS@k: the temperature of the sigmoid used to estimate ranks')
 parser.add_argument('--k_vals',       nargs='+', default=[1,2,4,8], type=int, help='Recall @ Values.')
 parser.add_argument('--k_vals_train',       nargs='+', default=[1,2,4,8,16], type=int, help='Training recall@k vals.')
-parser.add_argument('--k_temperatures',       nargs='+', default=[1,2,4,8,16], type=int, help='Temperature for training recall@k vals.')
+parser.add_argument('--k_temperatures',       nargs='+', default=[1,1,1,1,1], type=int, help='Temperature for training recall@k vals.')
 parser.add_argument('--resume', default='', type=str, help='path to checkpoint to load weights from (if empty then ImageNet pre-trained weights are loaded')
 parser.add_argument('--embed_dim',    default=512,         type=int,   help='Embedding dimensionality of the network')
 parser.add_argument('--arch',         default='resnet50',  type=str,   help='Network backend choice: resnet50, googlenet, BNinception')
@@ -150,7 +150,7 @@ if opt.dataset == 'cub':
         opt.tau = [10,20,30]
         opt.lr = 0.00001
         opt.opt = 'adamW'
-
+opt.k_temperatures = [1] * len(opt.k_vals)
 timestamp = datetime.datetime.now().strftime(r"%Y-%m-%d_%H-%M-%S")
 exp_name = aux.args2exp_name(opt)
 opt.save_name = f"weights_{exp_name}" +'/'+ timestamp
